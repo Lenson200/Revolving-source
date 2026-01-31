@@ -1,9 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from .validators import email_validator
 # Create your models here.
 
 class User(AbstractUser):
-    pass
+    email = models.EmailField(
+        unique=True,
+        validators=[email_validator],
+    )
+
+    is_staff_member = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
 class Business(models.Model):
     BUSINESS_TYPES = [
         ('produce', 'Fresh Produce'),

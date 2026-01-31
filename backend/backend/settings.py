@@ -32,6 +32,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "infoweb",
+    'rest_framework',
+    'corsheaders',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -41,6 +43,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -49,7 +52,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
+CORS_ALLOWED_ORIGINS = [
+    "https://legendary-xylophone-7gqpw6xxxjwcwxxw-3000.app.github.dev",
+]
+CORS_ALLOW_ALL_ORIGINS = True# only during development!
 ROOT_URLCONF = "backend.urls"
 
 TEMPLATES = [
