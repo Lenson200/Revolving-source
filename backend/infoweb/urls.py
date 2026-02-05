@@ -19,4 +19,6 @@ urlpatterns = [
      path('approve-staff/<int:pk>/', views.approve_staff_user, name='approve-staff'),
      path('list-contacts/', views.list_contacts, name='list-contacts'),
      path('contacts/<int:pk>/status/', views.update_contact_status, name='update-contact-status'),
+     path('collections/add/', views.create_collection, name='create-collection'),
+     path('api/collections/<str:business_id>/', views.collections_by_business, name='collections-by-business'),
 ]

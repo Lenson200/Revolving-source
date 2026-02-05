@@ -1,34 +1,115 @@
 {% extends "infoweb/layout.html" %}
-
+{% load static %}
 {% block body %}
-<h2>Pending Staff Members</h2>
 
-{% if pending_staff %}
-<table border="1" cellpadding="8" cellspacing="0">
-    <thead>
-        <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for staff in pending_staff %}
-        <tr>
-            <td>{{ staff.username }}</td>
-            <td>{{ staff.email }}</td>
-            <td>
-                <form method="post" action="{% url 'approve-staff' staff.id %}">
+<section class="py-5 bg-light min-vh-100">
+  <div class="container">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="fw-bold text-slate">Pending Staff Members</h2>
+        <p class="text-muted mb-0">Review and approve newly registered staff accounts.</p>
+      </div>
+      <a href="{% url 'index' %}" class="btn btn-outline-gradient rounded-pill">
+        ← Back to Dashboard
+      </a>
+    </div>
+
+    <!-- Staff Table -->
+    {% if pending_staff %}
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="table-light">
+              <tr class="text-slate-700">
+                <th>Username</th>
+                <th>Email</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for staff in pending_staff %}
+              <tr>
+                <td class="fw-semibold text-slate">{{ staff.username }}</td>
+                <td class="text-muted">{{ staff.email }}</td>
+                <td class="text-center">
+                  <form method="post" action="{% url 'approve-staff' staff.id %}" class="d-inline-block">
                     {% csrf_token %}
-                    <button type="submit">Approve</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>No pending staff members.</p>
-{% endif %}
+                    <button type="submit" class="btn btn-gradient btn-sm rounded-pill px-4 py-1 shadow-sm">
+                      Approve
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="card border-0 shadow-sm text-center py-5">
+      <div class="card-body">
+        <h5 class="text-muted">No pending staff members.</h5>
+        <p class="small text-secondary mb-0">
+          All staff accounts have been reviewed and approved.
+        </p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Custom Styling -->
+<style>
+  body {
+    background-color: #f8fafc;
+    color: #1e293b;
+  }
+
+  .text-slate {
+    color: #1e293b;
+  }
+  .text-slate-700 {
+    color: #334155;
+  }
+
+  .btn-gradient {
+    background: linear-gradient(to right, #0d9488, #10b981);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(to right, #0f766e, #0d9488);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  .btn-outline-gradient {
+    border: 2px solid #0d9488;
+    color: #0d9488;
+    transition: all 0.3s ease;
+  }
+  .btn-outline-gradient:hover {
+    background: linear-gradient(to right, #0d9488, #10b981);
+    color: #fff;
+  }
+
+  .card {
+    border-radius: 1rem;
+  }
+
+  table th {
+    font-weight: 600;
+    background-color: #f1f5f9;
+  }
+
+  table td {
+    vertical-align: middle;
+  }
+</style>
 
 {% endblock %}

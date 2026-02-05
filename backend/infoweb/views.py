@@ -1,7 +1,10 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
 from .serializers import BusinessSerializer,ContactSerializer,staffRegisterSerializer
-from .models import Business,Contact,User
+from .models import Business,Contact,User,Collection
+from django.contrib import messages
+from django.shortcuts import redirect,get_object_or_404
+from .forms import CollectionForm
 from rest_framework.response import Response
 from rest_framework.decorators import api_view,authentication_classes
 from django.contrib.auth import authenticate, login,logout
@@ -110,3 +113,39 @@ def update_contact_status(request, pk):
     contact.save()
     serializer = ContactSerializer(contact)
     return Response(serializer.data)  
+
+def create_collection(request):
+    if request.method == 'POST':
+        form = CollectionForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "✅ Collection added successfully!")
+            return redirect('create-collection')
+    else:
+        form = CollectionForm()
+
+    collections = Collection.objects.select_related('business').order_by('-created_at')
+    return render(request, 'infoweb/add_collection.html', {'form': form, 'collections': collections})
+
+@api_view(['GET'])
+def collections_by_business(request, business_id):
+    business = get_object_or_404(Business, type=business_id)
+    collections = business.collections.all()
+    data = {
+        "business": {
+            "id": business.type,
+            "title": business.title,
+            "description": business.description,
+        },
+        "collections": [
+            {
+                "id": c.id,
+                "name": c.name,
+                "description": c.description,
+                "price": c.price,
+                "image_url": request.build_absolute_uri(c.image.url) if c.image else "",
+            }
+            for c in collections
+        ],
+    }
+    return Response(data)

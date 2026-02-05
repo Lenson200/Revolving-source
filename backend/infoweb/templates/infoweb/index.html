@@ -1,7 +1,85 @@
 {% extends "infoweb/layout.html" %}
+{% load static %}
 {% block body %}
-<h2>Revolving sources Home Page</h2>
-<p>Welcome to the Revolving Sources information web portal.</p>
-<h1>About Revolving Sources</h1>
-<a href="{% url 'pending-staff-list' %}">View Pending Staff Members</a>
+
+<section class="min-vh-100 bg-light py-5">
+  <div class="container text-center">
+    <!-- Hero Section -->
+    <div class="mb-5">
+      <h1 class="fw-bold display-5 text-slate mb-3">
+        Welcome to
+        <span class="text-gradient">RevolvingSource</span>
+      </h1>
+      <p class="lead text-slate-600 mb-4">
+        Your centralized portal for managing business operations, staff, and services.
+      </p>
+      <a href="{% url 'pending-staff-list' %}" class="btn btn-gradient btn-lg rounded-pill shadow-sm px-4 py-2">
+        View Pending Staff Members →
+      </a>
+    </div>
+
+    <!-- About Section -->
+    <div class="card shadow-lg border-0 mx-auto" style="max-width: 700px;">
+      <div class="card-body p-5 text-center">
+        <h2 class="fw-semibold mb-3 text-slate-800">About Revolving Source</h2>
+        <p class="text-muted mb-4">
+          Revolving Source is a diversified trading and e-commerce company that bridges global suppliers and local
+          markets. From fresh produce to online retail, we combine reliability, technology, and efficiency to
+          deliver quality and value.
+        </p>
+        <a href="{% url 'create-collection' %}" class="btn btn-outline-gradient rounded-pill px-4 py-2 fw-semibold">
+          ➕ Manage Collections
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Custom Styles -->
+<style>
+  body {
+    background-color: #f8fafc;
+    color: #1e293b;
+  }
+
+  .text-slate {
+    color: #1e293b;
+  }
+  .text-slate-600 {
+    color: #475569;
+  }
+  .text-slate-800 {
+    color: #1e293b;
+  }
+
+  .text-gradient {
+    background: linear-gradient(to right, #0d9488, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .btn-gradient {
+    background: linear-gradient(to right, #0d9488, #10b981);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(to right, #0f766e, #0d9488);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+
+  .btn-outline-gradient {
+    border: 2px solid #0d9488;
+    color: #0d9488;
+    background: white;
+    transition: all 0.3s ease;
+  }
+  .btn-outline-gradient:hover {
+    background: linear-gradient(to right, #0d9488, #10b981);
+    color: white;
+  }
+</style>
+
 {% endblock %}
