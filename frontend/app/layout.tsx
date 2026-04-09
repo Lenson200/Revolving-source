@@ -1,4 +1,5 @@
 // app/layout.tsx
+declare module '*.css';
 import './globals.css'
 import RevolvingSourceLayout from '@/components/revolvingsource/Layout'
 export const metadata = {

@@ -1,6 +1,25 @@
 import axios from 'axios'
 
-const API_URL ='https://legendary-xylophone-7gqpw6xxxjwcwxxw-8000.app.github.dev/api/'
+const defaultApiUrl = process.env.NEXT_PUBLIC_API_URL
+
+const API_URL = (() => {
+  if (defaultApiUrl) {
+    return defaultApiUrl
+  }
+
+  if (typeof window !== 'undefined') {
+    const origin = window.location.origin
+    if (origin.includes('.app.github.dev')) {
+      return origin.replace(/-3000\.app\.github\.dev$/, '-8000.app.github.dev') + '/api/'
+    }
+    if (origin.includes('localhost')) {
+      return 'http://localhost:8000/api/'
+    }
+    return `${origin}/api/`
+  }
+
+  return 'http://localhost:8000/api/'
+})()
 
 export const fetchBusinesses = async () => {
   try {
