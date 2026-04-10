@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Apple, ShoppingBag, Briefcase, Shirt, ArrowUpRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { fetchBusinesses } from '@/utils/api'
+import { fetchCollectionsByBusiness } from '@/utils/api'
 
 // --- Static fallback business data ---
 const staticBusinesses = [
@@ -67,7 +67,7 @@ const staticBusinesses = [
 ]
 
 // --- Component to display one business card ---
-const BusinessCard = ({ business, index }: any) => {
+const BusinessCard = ({ business, index, onClick }: any) => {
   const isEven = index % 2 === 0
   return (
     <motion.div
@@ -89,7 +89,7 @@ const BusinessCard = ({ business, index }: any) => {
             </div>
           ))}
         </div>
-        <Button variant="outline" className="group rounded-full px-6 border-2 hover:border-teal-200 hover:bg-teal-50">
+        <Button variant="outline" className="group rounded-full px-6 border-2 hover:border-teal-200 hover:bg-teal-50" onClick={() => onClick && onClick(business)}>
           Learn More
           <ArrowUpRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </Button>
@@ -109,51 +109,194 @@ const BusinessCard = ({ business, index }: any) => {
 
 // --- Main Component ---
 export default function BusinessSections() {
-  const [dynamicBusinesses, setDynamicBusinesses] = useState<any[]>([])
+  const [collectionsByType, setCollectionsByType] = useState<Record<string, any[]>>({})
+  const [currentCollectionIndex, setCurrentCollectionIndex] = useState<Record<string, number>>({})
+  const [selectedBusiness, setSelectedBusiness] = useState<any>(null)
+  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
-    fetchBusinesses().then((data) => {
-      setDynamicBusinesses(data)
-    })
+    // Initialize with static business types
+    const businessTypes = ['produce', 'ecommerce', 'services', 'apparel']
+    setCollectionsByType(businessTypes.reduce((acc, t) => ({ ...acc, [t]: [] }), {}))
+
+    // Fetch collections for each business type
+    const fetchCollections = async () => {
+      const collections: Record<string, any[]> = {}
+      for (const type of businessTypes) {
+        try {
+          const data = await fetchCollectionsByBusiness(type)
+          collections[type] = data.collections || []
+        } catch (error) {
+          console.warn(`⚠️ Error fetching collections for ${type}:`, error)
+          collections[type] = []
+        }
+      }
+      setCollectionsByType(collections)
+    }
+    
+    // Fetch collections with a slight delay to allow static data to render first
+    const timer = setTimeout(() => {
+      fetchCollections()
+    }, 100)
+
+    return () => clearTimeout(timer)
   }, [])
 
-  // merge static + dynamic
-  const allBusinesses = [...staticBusinesses, ...dynamicBusinesses]
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentCollectionIndex(prev => {
+        const newIndex: Record<string, number> = { ...prev }
+        Object.keys(collectionsByType).forEach(type => {
+          const collections = collectionsByType[type]
+          if (collections && collections.length > 0) {
+            newIndex[type] = ((newIndex[type] || 0) + 1) % collections.length
+          }
+        })
+        return newIndex
+      })
+    }, 3 * 60 * 1000) // 3 minutes
+    return () => clearInterval(interval)
+  }, [collectionsByType])
+
+  // add cycling with collections to static businesses
+  const allBusinesses = staticBusinesses.map(business => {
+    const collections = collectionsByType[business.id] || []
+    const currentIndex = currentCollectionIndex[business.id] || 0
+    const currentCollection = collections[currentIndex]
+    return {
+      ...business,
+      image: currentCollection?.image_url || business.image,
+      description: currentCollection?.description || business.description,
+    }
+  })
 
   return (
-    <section className="py-24 lg:py-32 bg-white" id="services">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center max-w-3xl mx-auto mb-20"
-        >
-          <span className="inline-block px-4 py-2 bg-teal-50 text-teal-700 text-sm font-medium rounded-full mb-6">
-            Our Business Areas
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
-            Four Pillars of
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600">
-              {' '}
-              Excellence
+    <>
+      <section className="py-24 lg:py-32 bg-white" id="services">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          {/* Section Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center max-w-3xl mx-auto mb-20"
+          >
+            <span className="inline-block px-4 py-2 bg-teal-50 text-teal-700 text-sm font-medium rounded-full mb-6">
+              Our Business Areas
             </span>
-          </h2>
-          <p className="text-xl text-slate-600 leading-relaxed">
-            From farm-fresh produce to cutting-edge e-commerce, we operate across diverse sectors united by our
-            commitment to quality and customer satisfaction.
-          </p>
-        </motion.div>
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+              Four Pillars of
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600">
+                {' '}
+                Excellence
+              </span>
+            </h2>
+            <p className="text-xl text-slate-600 leading-relaxed">
+              From farm-fresh produce to cutting-edge e-commerce, we operate across diverse sectors united by our
+              commitment to quality and customer satisfaction.
+            </p>
+          </motion.div>
 
-        {/* Business Cards */}
-        <div className="space-y-24 lg:space-y-32">
-          {allBusinesses.map((business, index) => (
-            <BusinessCard key={`${business.id}-${index}`} business={business} index={index} />
-          ))}
+          {/* Business Cards */}
+          <div className="space-y-24 lg:space-y-32">
+            {allBusinesses.map((business, index) => (
+              <BusinessCard key={`${business.id}-${index}`} business={business} index={index} onClick={(b) => { setSelectedBusiness(b); setShowModal(true); }} />
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Modal for Collections */}
+      {showModal && selectedBusiness && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold mb-4">{selectedBusiness.title} Collections</h2>
+            {collectionsByType[selectedBusiness.id]?.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {collectionsByType[selectedBusiness.id].map((collection: any) => (
+                  <div key={collection.id} className="border rounded-lg p-4">
+                    {collection.image_url && <img src={collection.image_url} alt={collection.name} className="w-full h-32 object-cover rounded mb-2" />}
+                    <h3 className="font-semibold">{collection.name}</h3>
+                    <p className="text-sm text-gray-600">{collection.description}</p>
+                    {collection.price && <p className="text-lg font-bold">QAR{collection.price}</p>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500">Coming Soon!</p>
+            )}
+            <button onClick={() => setShowModal(false)} className="mt-4 px-4 py-2 bg-teal-500 text-white rounded">Close</button>
+          </div>
+        </div>
+      )}
+
+      {/* Collections Section */}
+      <section className="py-24 lg:py-32 bg-gray-50" id="collections">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          {/* Section Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center max-w-3xl mx-auto mb-20"
+          >
+            <span className="inline-block px-4 py-2 bg-teal-50 text-teal-700 text-sm font-medium rounded-full mb-6">
+              Our Collections
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+              Explore Our
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600">
+                {' '}
+                Products
+              </span>
+            </h2>
+            <p className="text-xl text-slate-600 leading-relaxed">
+              Discover our curated collections across all business areas, showcasing quality and innovation.
+            </p>
+          </motion.div>
+
+          {/* Collections by Business Type */}
+          <div className="space-y-16">
+            {[
+              'produce',
+              'ecommerce',
+              'services',
+              'apparel'
+            ].map(type => {
+              const business = staticBusinesses.find(b => b.id === type)
+              const collections = collectionsByType[type] || []
+              if (collections.length === 0) return null
+              return (
+                <motion.div
+                  key={type}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <h3 className="text-2xl md:text-3xl font-bold text-slate-900 mb-8">{business?.title || type}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {collections.map((collection: any) => (
+                      <div key={collection.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                        {collection.image_url && (
+                          <img src={collection.image_url} alt={collection.name} className="w-full h-48 object-cover" />
+                        )}
+                        <div className="p-6">
+                          <h4 className="text-lg font-semibold text-slate-900 mb-2">{collection.name}</h4>
+                          <p className="text-sm text-slate-600 mb-4">{collection.description}</p>
+                          {collection.price && <p className="text-xl font-bold text-teal-600">QAR{collection.price}</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+    </>
   )
 }

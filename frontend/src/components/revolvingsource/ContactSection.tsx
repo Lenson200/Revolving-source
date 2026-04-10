@@ -24,7 +24,7 @@ const contactInfo = [
     icon: MapPin,
     label: 'Visit Us',
     value: 'Alshamil Trading Center, Suite 07',
-    href: '#'
+    href: 'https://www.google.com/maps/place/Trueshine+events/@25.22407,51.5060019,19z/data=!4m6!3m5!1s0x3e45dbb5f456b345:0x18358ed024821b11!8m2!3d25.2243914!4d51.5065943!16s%2Fg%2F11y8pkzdrr!5m2!1e2!1e4?entry=ttu&g_ep=EgoyMDI2MDQwNy4wIKXMDSoASAFQAw%3D%3D'
   }
 ];
 

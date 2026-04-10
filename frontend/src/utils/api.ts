@@ -32,6 +32,18 @@ export const fetchBusinesses = async () => {
     return [] // return empty list instead of crashing
   }
 }
+
+export const fetchCollectionsByBusiness = async (businessType: string) => {
+  try {
+    const response = await axios.get(`${API_URL}collections/${businessType}/`, {
+      timeout: 3000,
+    })
+    return response.data
+  } catch (error) {
+    console.warn(`⚠️ Failed to fetch collections for ${businessType} — returning empty.`)
+    return { business: null, collections: [] }
+  }
+}
 export const submitContactForm = async (formData: any) => {
   try {
     const response = await axios.post(`${API_URL}contacts/`, formData, {
