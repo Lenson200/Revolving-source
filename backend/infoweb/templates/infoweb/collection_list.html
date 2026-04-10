@@ -1,0 +1,56 @@
+{% extends "infoweb/layout.html" %}
+{% block body %}
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-teal">Collections</h2>
+        <a href="{% url 'index' %}" class="btn btn-outline-secondary">
+        ← Back to Dashboard
+        </a>
+    </div>
+    
+    <!-- Collections Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-teal text-white py-3">
+        <h5 class="mb-0">📚 All Collections</h5>
+        </div>
+        <div class="card-body bg-white p-0">
+        {% if collections %}
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+            <tr>
+                <th scope="col">S.No</th>
+                <th scope="col">Business</th>
+                <th scope="col">Collection Name</th>
+                <th scope="col">Image</th>
+                <th scope="col">Price (QAR)</th>
+                <th scope="col">Created At</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for collection in collections %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ collection.business.title }}</td>
+                <td>{{ collection.name }}</td>
+                <td>
+                {% if collection.image %}
+                    <img src="{{ collection.image.url }}" alt="{{ collection.name }}" width="70" class="rounded shadow-sm" />
+                {% else %}
+                    <span class="text-muted">No image</span>
+                {% endif %}
+                </td>
+                <td>{{ collection.price }}</td>
+                <td>{{ collection.created_at|date:"M d, Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+            No collections found. Start by adding a new collection!
+        </div>
+        {% endif %}
+        </div>
+    </div>
+    
+    {% endblock %}

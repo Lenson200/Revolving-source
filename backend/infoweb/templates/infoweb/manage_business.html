@@ -1,0 +1,155 @@
+{% extends "infoweb/layout.html" %}
+{% block body %}
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-teal">Manage Business</h2>
+    <a href="{% url 'index' %}" class="btn btn-outline-secondary">
+      ← Back to Dashboard
+    </a>
+  </div>
+   <!-- Message -->
+  <div id="messageBox"></div>
+
+  <!-- Business Form -->
+  <div class="card shadow-sm border-0 mb-5">
+    <div class="card-header bg-teal text-white py-3">
+      <h5 class="mb-0">✏️ Update Business</h5>
+    </div>
+
+    <div class="card-body bg-white">
+      <form id="businessForm" class="row g-3">
+
+        <!-- Business Type -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Business Type</label>
+         <input type="text" 
+         id="type" 
+         class="form-control bg-light" 
+         value="{{ business.type }}" 
+         readonly>
+        </div>
+
+        <!-- Title -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Title</label>
+          <input type="text" id="title" class="form-control">
+        </div>
+
+        <!-- Subtitle -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Subtitle</label>
+          <input type="text" id="subtitle" class="form-control">
+        </div>
+
+        <!-- Image URL -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Image URL</label>
+          <input type="text" id="image_url" class="form-control">
+        </div>
+
+        <!-- Description -->
+        <div class="col-md-12">
+          <label class="form-label fw-semibold">Description</label>
+          <textarea id="description" rows="4" class="form-control"></textarea>
+        </div>
+
+        <!-- Features -->
+        <div class="col-md-12">
+          <label class="form-label fw-semibold">Features (comma separated)</label>
+          <input type="text" id="features" class="form-control">
+        </div>
+
+        <!-- Image Preview -->
+        <div class="col-md-12">
+          <img id="previewImage" class="img-fluid rounded shadow-sm d-none" style="max-height:250px;">
+        </div>
+
+        <!-- Submit -->
+        <div class="col-12 text-end">
+          <button type="submit" class="btn btn-teal px-5 py-2 fw-semibold shadow-sm">
+            Update Business
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+<script>
+   const businessType = "{{ business_type }}";
+
+  const updateUrl = `/api/business/update/${businessType}/`;
+  const fetchUrl = `/api/collections/${businessType}/`; // reuse existing endpoint
+
+  const messageBox = document.getElementById('messageBox');
+
+  // Load existing data
+  async function loadBusiness() {
+    const res = await fetch(fetchUrl);
+    const data = await res.json();
+
+    const b = data.business;
+
+    document.getElementById('type').value = b.type;
+    document.getElementById('title').value = b.title || '';
+    document.getElementById('subtitle').value = b.subtitle || '';
+    document.getElementById('description').value = b.description || '';
+    document.getElementById('features').value = (b.features || []).join(', ');
+    document.getElementById('image_url').value = b.image_url || '';
+
+    if (b.image_url) {
+      const img = document.getElementById('previewImage');
+      img.src = b.image_url;
+      img.classList.remove('d-none');
+    }
+  }
+
+  loadBusiness();
+
+  // Live image preview
+  document.getElementById('image_url').addEventListener('input', function () {
+    const img = document.getElementById('previewImage');
+    img.src = this.value;
+    img.classList.remove('d-none');
+  });
+
+  // Submit update
+  document.getElementById('businessForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const payload = {
+      title: document.getElementById('title').value,
+      subtitle: document.getElementById('subtitle').value,
+      description: document.getElementById('description').value,
+      features: document.getElementById('features').value.split(',').map(f => f.trim()),
+      image_url: document.getElementById('image_url').value
+    };
+
+    const res = await fetch(updateUrl, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      messageBox.innerHTML = `
+        <div class="alert alert-success alert-dismissible fade show">
+          ✅ Business updated successfully
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+    } else {
+      messageBox.innerHTML = `
+        <div class="alert alert-danger alert-dismissible fade show">
+          ❌ Error: ${JSON.stringify(data)}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+    }
+  });
+</script>
+
+{% endblock %}

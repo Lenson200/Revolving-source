@@ -11,22 +11,19 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+from decouple import config
+import dj_database_url
 
-# # Build paths inside the project like this: BASE_DIR / 'subdir'.
-# BASE_DIR = Path(__file__).resolve().parent.parent
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-t-o)6se%86uy-7btg1fvk@386cs#(kmgd)jfgp!^o2xh%q7z8@"
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-t-o)6se%86uy-7btg1fvk@386cs#(kmgd)jfgp!^o2xh%q7z8@')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 # Application definition
 
@@ -52,10 +49,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-CORS_ALLOWED_ORIGINS = [
-    "https://legendary-xylophone-7gqpw6xxxjwcwxxw-3000.app.github.dev",
-]
-CORS_ALLOW_ALL_ORIGINS = True# only during development!
+
+# CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='https://sturdy-system-gg976jpppwrhvjp5-3000.app.github.dev').split(',')
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
+
 ROOT_URLCONF = "backend.urls"
 
 TEMPLATES = [
@@ -80,10 +77,9 @@ WSGI_APPLICATION = "backend.wsgi.application"
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-       'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL', default=f'sqlite:///{os.path.join(BASE_DIR, "db.sqlite3")}')
+    )
 }
 
 AUTH_USER_MODEL = "infoweb.User"

@@ -129,23 +129,65 @@ def create_collection(request):
 
 @api_view(['GET'])
 def collections_by_business(request, business_id):
-    business = get_object_or_404(Business, type=business_id)
-    collections = business.collections.all()
-    data = {
-        "business": {
+    try:
+        business = Business.objects.get(type=business_id)
+        collections = business.collections.all()
+        business_data = {
             "id": business.type,
             "title": business.title,
             "description": business.description,
-        },
-        "collections": [
-            {
-                "id": c.id,
-                "name": c.name,
-                "description": c.description,
-                "price": c.price,
-                "image_url": request.build_absolute_uri(c.image.url) if c.image else "",
-            }
-            for c in collections
-        ],
+        }
+    except Business.DoesNotExist:
+        # Return empty collections for non-existent business types
+        business_data = None
+        collections = []
+    
+    collection_list = [
+        {
+            "id": c.id,
+            "name": c.name,
+            "description": c.description,
+            "price": str(c.price) if c.price else None,
+            "image_url": request.build_absolute_uri(c.image.url) if c.image else "",
+        }
+        for c in collections
+    ]
+    
+    data = {
+        "business": business_data,
+        "collections": collection_list,
     }
-    return Response(data)
+    return Response(data, status=status.HTTP_200_OK)
+
+def business_list(request):
+    businesses = Business.objects.all()
+    return render(request, "infoweb/business_list.html", {
+        "businesses": businesses
+    })
+def collection_list(request):
+    collections = Collection.objects.select_related('business').order_by('-created_at')
+    return render(request, "infoweb/collection_list.html", {
+        "collections": collections
+    })
+@api_view(['GET', 'PUT', 'PATCH'])
+def update_business(request, business_type):
+    business = get_object_or_404(Business, type=business_type)
+
+    # 👉 1. HANDLE GET (Render Template)
+    if request.method == 'GET':
+        return render(request, "infoweb/manage_business.html", {
+            "business_type": business.type,
+            "business": business
+        })
+
+    # 👉 2. HANDLE UPDATE (PUT / PATCH)
+    serializer = BusinessSerializer(business, data=request.data, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            "message": "Updated successfully",
+            "data": serializer.data
+        })
+
+    return Response(serializer.errors, status=400)

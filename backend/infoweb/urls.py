@@ -21,4 +21,7 @@ urlpatterns = [
      path('contacts/<int:pk>/status/', views.update_contact_status, name='update-contact-status'),
      path('collections/add/', views.create_collection, name='create-collection'),
      path('api/collections/<str:business_id>/', views.collections_by_business, name='collections-by-business'),
+     path(' businesses',views.business_list,name='business-list'),
+     path('collections',views.collection_list,name='collection-list'),
+     path('business/update/<str:business_type>/', views.update_business, name='update-business'),
 ]
