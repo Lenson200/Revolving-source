@@ -201,7 +201,7 @@ export default function BusinessSections() {
           {/* Business Cards */}
           <div className="space-y-24 lg:space-y-32">
             {allBusinesses.map((business, index) => (
-              <BusinessCard key={`${business.id}-${index}`} business={business} index={index} onClick={(b) => { setSelectedBusiness(b); setShowModal(true); }} />
+              <BusinessCard key={`${business.id}-${index}`} business={business} index={index} onClick={(b: any) => { setSelectedBusiness(b); setShowModal(true); }} />
             ))}
           </div>
         </div>
