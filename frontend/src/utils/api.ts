@@ -4,7 +4,7 @@ const defaultApiUrl = process.env.NEXT_PUBLIC_API_URL
 
 const API_URL = (() => {
   if (defaultApiUrl) {
-    return defaultApiUrl
+    return defaultApiUrl.replace(/\/+$/, '') + '/api/'
   }
 
   if (typeof window !== 'undefined') {
@@ -15,7 +15,9 @@ const API_URL = (() => {
     if (origin.includes('localhost')) {
       return 'http://localhost:8000/api/'
     }
-    return `${origin}/api/`
+    const fallbackApiUrl = 'https://laudable-vision-production.up.railway.app/api/'
+    console.warn('⚠️ NEXT_PUBLIC_API_URL is not set; falling back to', fallbackApiUrl)
+    return fallbackApiUrl
   }
 
   return 'http://localhost:8000/api/'
