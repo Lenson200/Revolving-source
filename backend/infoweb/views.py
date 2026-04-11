@@ -118,7 +118,14 @@ def create_collection(request):
     if request.method == 'POST':
         form = CollectionForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            collection = form.save(commit=False)
+            
+            # Explicitly save the image file
+            if 'image' in request.FILES:
+                image_file = request.FILES['image']
+                collection.image = image_file
+            
+            collection.save()
             messages.success(request, "✅ Collection added successfully!")
             return redirect('create-collection')
     else:

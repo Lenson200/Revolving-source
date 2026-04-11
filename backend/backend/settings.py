@@ -133,6 +133,15 @@ if not DEBUG:
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# Ensure media directory exists with proper permissions
+os.makedirs(MEDIA_ROOT, exist_ok=True)
+os.makedirs(os.path.join(MEDIA_ROOT, 'collections'), exist_ok=True)
+
+# Make sure directory is writable
+if os.path.exists(MEDIA_ROOT):
+    os.chmod(MEDIA_ROOT, 0o755)
+    os.chmod(os.path.join(MEDIA_ROOT, 'collections'), 0o755)
+
 # Security Settings for Production
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
