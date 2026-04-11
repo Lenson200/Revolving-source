@@ -1,0 +1,11 @@
+{
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "gunicorn backend.wsgi --bind 0.0.0.0:$PORT"
+  },
+  "source": {
+    "root": "backend"
+  }
+}
