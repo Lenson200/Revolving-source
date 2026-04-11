@@ -122,8 +122,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 # Media files (User uploads)
-MEDIA_URL = "/"
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = '/app/media'
 
 # WhiteNoise for serving static and media files in production
 if not DEBUG:
