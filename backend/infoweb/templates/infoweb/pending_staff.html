@@ -56,7 +56,11 @@
                     {% elif staff.designation == 'manager' %}bg-warning
                     {% else %}bg-secondary{% endif %}
                   rounded-pill">
-                    {{ staff.get_designation_display }}
+                    {% if staff.designation %}
+                      {{ staff.get_designation_display }}
+                    {% else %}
+                      Staff
+                    {% endif %}
                   </span>
                 </td>
                 <td>

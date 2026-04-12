@@ -136,15 +136,19 @@ def pending_staff_list(request):
 
     # Check if user has designation attribute
     if not hasattr(request.user, 'designation'):
-        messages.error(request, 'User account is not properly configured. Please contact admin.')
+        messages.error(request, 'Database migration required. Please run: python manage.py migrate')
         return redirect('index')
 
     if request.user.designation != 'director':
         messages.error(request, 'Only directors can access this page')
         return redirect('index')
 
-    users = User.objects.filter(is_staff_member=True, is_approved=False).order_by('-date_joined')
-    return render(request, 'infoweb/pending_staff.html', {'pending_staff': users})
+    try:
+        users = User.objects.filter(is_staff_member=True, is_approved=False).order_by('-date_joined')
+        return render(request, 'infoweb/pending_staff.html', {'pending_staff': users})
+    except Exception as e:
+        messages.error(request, f'Database error: {str(e)}. Please check migrations.')
+        return redirect('index')
 def approve_staff_user(request, pk):
     """Approve a specific staff user - only directors can approve."""
     if not request.user.is_authenticated:
