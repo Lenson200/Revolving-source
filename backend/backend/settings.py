@@ -81,11 +81,18 @@ WSGI_APPLICATION = "backend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# Database configuration
 if os.getenv('DATABASE_URL'):
+    # Use DATABASE_URL when available (Railway environment)
     DATABASES = {
-        'default': dj_database_url.config(default=os.getenv('DATABASE_URL'), conn_max_age=600)
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            ssl_require=True
+        )
     }
 else:
+    # Fallback to individual PG* environment variables
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
