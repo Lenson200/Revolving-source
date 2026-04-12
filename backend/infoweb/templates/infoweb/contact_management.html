@@ -1,0 +1,268 @@
+{% extends "infoweb/layout.html" %}
+{% load static %}
+{% block body %}
+
+<section class="py-5 bg-light min-vh-100">
+  <div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="fw-bold text-slate">Contact Management</h2>
+        <p class="text-muted mb-0">View and manage all customer inquiries</p>
+      </div>
+      <div class="d-flex gap-2">
+        {% if user.designation == 'director' %}
+        <a href="{% url 'pending-staff-list' %}" class="btn btn-info rounded-pill">
+          👥 Pending Staff
+        </a>
+        {% endif %}
+        <a href="{% url 'index' %}" class="btn btn-outline-gradient rounded-pill">
+          ← Back to Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <label class="fw-semibold text-slate mb-2">Filter by Status:</label>
+            <div class="btn-group" role="group">
+              <a href="{% url 'contact-management' %}" 
+                 class="btn btn-sm {% if not status_filter %}btn-gradient{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                All Contacts
+              </a>
+              {% for value, label in statuses %}
+              <a href="?status={{ value }}" 
+                 class="btn btn-sm {% if status_filter == value %}btn-gradient{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                {{ label }}
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="col-md-6 text-end">
+            <span class="badge bg-primary rounded-pill fs-6">
+              {{ contacts.count }} Contact{{ contacts.count|pluralize }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      {% for message in messages %}
+        <div>{{ message }}</div>
+      {% endfor %}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <!-- Contacts Table -->
+    {% if contacts %}
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="table-light">
+              <tr class="text-slate-700">
+                <th>Name</th>
+                <th>Email</th>
+                <th>Company</th>
+                <th>Interest</th>
+                <th>Message</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for contact in contacts %}
+              <tr class="border-bottom">
+                <td class="fw-semibold text-slate">
+                  {{ contact.first_name }} {{ contact.last_name }}
+                </td>
+                <td class="text-muted">
+                  <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+                </td>
+                <td>{{ contact.company|default:"N/A" }}</td>
+                <td>
+                  <span class="badge bg-light text-dark">
+                    {{ contact.get_interest_display }}
+                  </span>
+                </td>
+                <td>
+                  <small class="text-muted" title="{{ contact.message }}">
+                    {{ contact.message|truncatewords:10 }}
+                  </small>
+                </td>
+                <td>
+                  <small class="text-muted">
+                    {{ contact.submitted_at|date:"M d, Y" }}
+                  </small>
+                </td>
+                <td>
+                  <span class="badge {% if contact.status == 'completed' %}bg-success{% else %}bg-warning text-dark{% endif %} rounded-pill">
+                    {{ contact.get_status_display }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <!-- View Details Button -->
+                    <button type="button" 
+                            class="btn btn-outline-primary rounded-pill" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#contactModal{{ contact.id }}">
+                      View
+                    </button>
+                    
+                    <!-- Status Toggle -->
+                    {% if contact.status == 'pending' %}
+                    <form method="POST" action="{% url 'update-contact-status' contact.id %}" style="display: inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="status" value="completed">
+                      <button type="submit" class="btn btn-outline-success btn-sm rounded-pill">
+                        ✓ Complete
+                      </button>
+                    </form>
+                    {% else %}
+                    <form method="POST" action="{% url 'update-contact-status' contact.id %}" style="display: inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="status" value="pending">
+                      <button type="submit" class="btn btn-outline-warning btn-sm rounded-pill">
+                        ⟲ Reopen
+                      </button>
+                    </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Contact Details Modal -->
+              <div class="modal fade" id="contactModal{{ contact.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header border-bottom-0">
+                      <h5 class="modal-title">{{ contact.first_name }} {{ contact.last_name }}'s Contact Details</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="mb-3">
+                        <label class="fw-semibold text-slate">Full Name:</label>
+                        <p class="text-muted">{{ contact.first_name }} {{ contact.last_name }}</p>
+                      </div>
+                      <div class="mb-3">
+                        <label class="fw-semibold text-slate">Email:</label>
+                        <p class="text-muted">
+                          <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+                        </p>
+                      </div>
+                      <div class="mb-3">
+                        <label class="fw-semibold text-slate">Company:</label>
+                        <p class="text-muted">{{ contact.company|default:"Not provided" }}</p>
+                      </div>
+                      <div class="mb-3">
+                        <label class="fw-semibold text-slate">Area of Interest:</label>
+                        <p class="text-muted">{{ contact.get_interest_display }}</p>
+                      </div>
+                      <div class="mb-3">
+                        <label class="fw-semibold text-slate">Status:</label>
+                        <p class="text-muted">
+                          <span class="badge {% if contact.status == 'completed' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {{ contact.get_status_display }}
+                          </span>
+                        </p>
+                      </div>
+                      <div class="mb-3">
+                        <label class="fw-semibold text-slate">Submitted:</label>
+                        <p class="text-muted">{{ contact.submitted_at|date:"F d, Y \a\t H:i" }}</p>
+                      </div>
+                      <div class="mb-3">
+                        <label class="fw-semibold text-slate">Message:</label>
+                        <p class="text-muted" style="white-space: pre-wrap; word-wrap: break-word;">{{ contact.message }}</p>
+                      </div>
+                    </div>
+                    <div class="modal-footer border-top-0">
+                      <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="card border-0 shadow-sm text-center py-5">
+      <div class="card-body">
+        <h5 class="text-muted">📭 No contacts found</h5>
+        <p class="small text-secondary mb-0">
+          {% if status_filter %}
+            No contacts with "{{ status_filter }}" status yet.
+          {% else %}
+            There are no contacts in the system.
+          {% endif %}
+        </p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Custom Styling -->
+<style>
+  body {
+    background-color: #f8fafc;
+    color: #1e293b;
+  }
+
+  .text-slate {
+    color: #1e293b;
+  }
+  .text-slate-700 {
+    color: #334155;
+  }
+
+  .btn-gradient {
+    background: linear-gradient(to right, #0d9488, #10b981);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(to right, #0f766e, #0d9488);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  .btn-outline-gradient {
+    border: 2px solid #0d9488;
+    color: #0d9488;
+    transition: all 0.3s ease;
+  }
+  .btn-outline-gradient:hover {
+    background: linear-gradient(to right, #0d9488, #10b981);
+    color: #fff;
+    border-color: #0d9488;
+  }
+
+  .table tbody tr:hover {
+    background-color: rgba(13, 148, 136, 0.05);
+  }
+
+  .modal-header {
+    background-color: #f8fafc;
+  }
+
+  .btn-group-sm .btn {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+  }
+</style>
+
+{% endblock %}

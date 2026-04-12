@@ -5,25 +5,89 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Infoweb Layout</title>
+        <title>{% block title %}RevolvingSource{% endblock %}</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- <link rel="stylesheet" href="{% static 'infoweb/styles.css' %}"> -->
     </head>
     <body>
-        <header>
-            <h1>Revolving Sources</h1>
-        </header>
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="{% url 'index' %}">
+                    <span class="text-success">Revolving</span>Source
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'index' %}">Home</a>
+                        </li>
+                        {% if user.is_authenticated %}
+                            {% if user.designation == 'director' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'pending-staff-list' %}">Pending Staff</a>
+                            </li>
+                            {% endif %}
+                            {% if user.is_staff %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'contact-management' %}">Contacts</a>
+                            </li>
+                            {% endif %}
+                        {% endif %}
+                    </ul>
+
+                    <ul class="navbar-nav">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle"></i> {{ user.username }}
+                                    {% if user.designation %}
+                                      <span class="badge bg-secondary">{{ user.get_designation_display }}</span>
+                                    {% else %}
+                                      <span class="badge bg-secondary">Staff</span>
+                                    {% endif %}
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><span class="dropdown-item-text small text-muted">{{ user.email }}</span></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" action="{% url 'logout-page' %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bi bi-box-arrow-right"></i> Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'staff-login-page' %}">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'staff-register' %}">Register</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
         <main>
             {% block body %}
             <!-- All Content will be injected here -->
-            {% endblock %} 
+            {% endblock %}
         </main>
-        <footer>
-    <div class="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
-        <p class="text-slate-500 text-sm">
-            © {% now "Y" %} Revolving Sources. All rights reserved.
-        </p>
-    </div>
-</footer>
+
+        <footer class="bg-dark text-light py-4 mt-5">
+            <div class="container text-center">
+                <p class="mb-0">
+                    © {% now "Y" %} Revolving Sources. All rights reserved.
+                </p>
+            </div>
+        </footer>
     </body>

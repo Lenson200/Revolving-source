@@ -4,6 +4,14 @@
 
 <section class="min-vh-100 bg-light py-5">
   <div class="container text-center">
+    {% if messages %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      {% for message in messages %}
+        <div>{{ message }}</div>
+      {% endfor %}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
     <!-- Hero Section -->
     <div class="mb-5">
       <h1 class="fw-bold display-5 text-slate mb-3">
@@ -35,7 +43,7 @@
         </a>
         <a href="{% url 'collection-list' %}" class="btn btn-outline-gradient rounded-pill px-4 py-2 fw-semibold">
           📚 View Collections
-        </a>  
+        </a>
       </div>
     </div>
   </div>

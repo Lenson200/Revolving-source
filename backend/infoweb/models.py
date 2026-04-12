@@ -9,6 +9,13 @@ class User(AbstractUser):
         validators=[email_validator],
     )
 
+    DESIGNATION_CHOICES = [
+        ('staff', 'Staff'),
+        ('manager', 'Manager'),
+        ('director', 'Director'),
+    ]
+
+    designation = models.CharField(max_length=20, choices=DESIGNATION_CHOICES, default='staff')
     is_staff_member = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
 class Business(models.Model):
@@ -36,6 +43,11 @@ class Contact(models.Model):
         ('apparel', 'Fashion & Apparel'),
         ('other', 'Other Inquiry'),
     ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+    ]
 
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
@@ -43,6 +55,7 @@ class Contact(models.Model):
     company = models.CharField(max_length=100, blank=True)
     interest = models.CharField(max_length=20, choices=INTEREST_CHOICES, default='other')
     message = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     submitted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

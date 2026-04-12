@@ -24,6 +24,12 @@ class IsStaffOrCreateOnly(BasePermission):
 def index(request):
     return render(request, 'infoweb/index.html')
 
+def staff_login_page(request):
+    """Render the staff login page."""
+    if request.user.is_authenticated:
+        return redirect('index')
+    return render(request, 'infoweb/staff_login.html')
+
 class BusinessViewSet(viewsets.ModelViewSet):
     queryset = Business.objects.all()
     serializer_class = BusinessSerializer
@@ -39,63 +45,136 @@ class ContactViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response({'message': 'Your message has been received!'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-@api_view(['POST'])
 def staff_register(request):
-    serializer = staffRegisterSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response( {'message': 'Registration successful. Await admin approval.'},
-            status=201)
-    return Response(serializer.errors, status=400)
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+        designation = request.POST.get('designation', 'staff')
+
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'infoweb/staff_register.html', {
+                'username': username,
+                'email': email,
+                'designation': designation,
+                'designations': User.DESIGNATION_CHOICES,
+            })
+
+        data = {
+            'username': username,
+            'email': email,
+            'password': password,
+            'designation': designation,
+        }
+
+        serializer = staffRegisterSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            messages.success(request, 'Registration successful! Please log in or continue from the homepage.')
+            return redirect('index')
+
+        errors = serializer.errors
+        for field, field_errors in errors.items():
+            for error in field_errors:
+                messages.error(request, f"{field}: {error}")
+
+        return render(request, 'infoweb/staff_register.html', {
+            'username': username,
+            'email': email,
+            'designation': designation,
+            'designations': User.DESIGNATION_CHOICES,
+        })
+
+    return render(request, 'infoweb/staff_register.html', {
+        'designations': User.DESIGNATION_CHOICES,
+    })
 
 @api_view(['POST'])
 @authentication_classes([])  
 def staff_login(request):
     email = request.data.get('email')
     password = request.data.get('password')
+    
+    # Validate email domain
+    allowed_domains = ['revolvingsource.com', 'test.com']
+    domain = email.split('@')[-1] if '@' in email else ''
+    if domain not in allowed_domains:
+        return Response({'error': 'wrong email address'}, status=400)
 
     try:
         user_obj = User.objects.get(email=email)
     except User.DoesNotExist:
         return Response({'error': 'Invalid credentials'}, status=400)
+    
+    if not user_obj.is_approved:
+        return Response({'error': 'Your account is pending approval from a director'}, status=403)
 
     user = authenticate(username=user_obj.username, password=password)
     if user is None:
         return Response({'error': 'Invalid credentials'}, status=400)
 
     login(request, user)
-    return Response({'message': 'Login successful'})  
+    return Response({'message': 'Login successful', 'designation': user_obj.designation})  
 @api_view(['POST'])
 def logout_view(request):
     logout(request)
     return Response({'message': 'Logged out successfully'})
 
-@api_view(['GET'])
+def logout_page(request):
+    """Handle logout and redirect to index."""
+    logout(request)
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('index')
+
 def pending_staff_list(request):
-    """Return all unapproved staff members."""
-    users = User.objects.filter(is_staff=True, is_approved=False)
-    data = [
-        {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'date_joined': user.date_joined,
-        }
-        for user in users
-    ]
-    print("Pending staff users:", data)  # Debugging line
-    return render(request, 'infoweb/pending_staff.html', {'pending_staff': data})
-@api_view(['POST'])
+    """Return all unapproved staff members - only directors can view."""
+    if not request.user.is_authenticated:
+        messages.error(request, 'You must be logged in to access this page')
+        return redirect('index')
+
+    # Check if user has designation attribute
+    if not hasattr(request.user, 'designation'):
+        messages.error(request, 'Database migration required. Please run: python manage.py migrate')
+        return redirect('index')
+
+    if request.user.designation != 'director':
+        messages.error(request, 'Only directors can access this page')
+        return redirect('index')
+
+    try:
+        users = User.objects.filter(is_staff_member=True, is_approved=False).order_by('-date_joined')
+        return render(request, 'infoweb/pending_staff.html', {'pending_staff': users})
+    except Exception as e:
+        messages.error(request, f'Database error: {str(e)}. Please check migrations.')
+        return redirect('index')
 def approve_staff_user(request, pk):
-    """Approve a specific staff user."""
+    """Approve a specific staff user - only directors can approve."""
+    if not request.user.is_authenticated:
+        messages.error(request, 'You must be logged in to approve staff')
+        return redirect('index')
+
+    # Check if user has designation attribute
+    if not hasattr(request.user, 'designation'):
+        messages.error(request, 'User account is not properly configured. Please contact admin.')
+        return redirect('index')
+
+    if request.user.designation != 'director':
+        messages.error(request, 'Only directors can approve staff')
+        return redirect('index')
+
     try:
         user = User.objects.get(pk=pk)
     except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        messages.error(request, 'User not found')
+        return redirect('pending-staff-list')
 
     user.is_approved = True
+    user.is_staff = True  # Make them a Django staff user
     user.save()
-    return Response({'message': f"{user.username} approved successfully."})
+    messages.success(request, f"{user.username} has been approved successfully!")
+    return redirect('pending-staff-list')
 
 @api_view(['GET'])
 def list_contacts(request):
@@ -106,24 +185,57 @@ def list_contacts(request):
     serializer = ContactSerializer(contacts, many=True)
     return Response(serializer.data)
 
-@api_view(['PATCH'])
+def contact_management(request):
+    """Manage and view all contacts - staff only."""
+    if not request.user.is_authenticated:
+        messages.error(request, 'You must be logged in to access contacts')
+        return redirect('index')
+
+    if not request.user.is_staff:
+        messages.error(request, 'You must be staff to access contacts')
+        return redirect('index')
+
+    contacts = Contact.objects.all().order_by('-submitted_at')
+
+    # Filter by status if provided
+    status_filter = request.GET.get('status')
+    if status_filter:
+        contacts = contacts.filter(status=status_filter)
+
+    context = {
+        'contacts': contacts,
+        'status_filter': status_filter,
+        'statuses': Contact._meta.get_field('status').choices,
+    }
+    return render(request, 'infoweb/contact_management.html', context)
+
+
 def update_contact_status(request, pk):
-    print("🔥 PATCH VIEW HIT")
+    """Update contact status - only staff can update."""
+    if not request.user.is_authenticated:
+        messages.error(request, 'You must be logged in to update contacts')
+        return redirect('index')
+
+    if not request.user.is_staff:
+        messages.error(request, 'You must be staff to update contacts')
+        return redirect('contact-management')
+
     try:
         contact = Contact.objects.get(pk=pk)
     except Contact.DoesNotExist:
-        return Response({'detail': 'Not found'}, status=404)
+        messages.error(request, 'Contact not found')
+        return redirect('contact-management')
 
-    status_value = request.data.get('status')
-    valid_statuses = ['new', 'in_progress', 'resolved']  # ✅ match frontend
+    status_value = request.POST.get('status') or request.data.get('status')
+    valid_statuses = ['pending', 'completed']
     if status_value not in valid_statuses:
-        return Response({'detail': 'Invalid status'}, status=400)
-    print("Updating contact ID", pk, "to status", status_value)  # Debugging line
+        messages.error(request, 'Invalid status')
+        return redirect('contact-management')
 
-    contact.status = status_value  # ✅ use a proper status field
+    contact.status = status_value
     contact.save()
-    serializer = ContactSerializer(contact)
-    return Response(serializer.data)  
+    messages.success(request, f"Contact status updated to {status_value}")
+    return redirect('contact-management')  
 
 def create_collection(request):
     if request.method == 'POST':

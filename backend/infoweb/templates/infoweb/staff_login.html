@@ -1,0 +1,176 @@
+{% extends "infoweb/layout.html" %}
+{% load static %}
+{% block body %}
+
+<section class="py-5 bg-light min-vh-100">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-5">
+        <!-- Header -->
+        <div class="text-center mb-4">
+          <h2 class="fw-bold text-slate">Staff Login</h2>
+          <p class="text-muted">Sign in with your @revolvingsource.com or @test.com email</p>
+        </div>
+
+        <!-- Login Form -->
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+            {% if messages %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              {% for message in messages %}
+                <div>{{ message }}</div>
+              {% endfor %}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endif %}
+
+            <form id="loginForm" method="POST" action="{% url 'staff-login' %}">
+              {% csrf_token %}
+              
+              <!-- Email Field -->
+              <div class="mb-3">
+                <label for="email" class="form-label fw-semibold text-slate">Email</label>
+                <input 
+                  type="email" 
+                  class="form-control form-control-lg" 
+                  id="email"
+                  name="email"
+                  placeholder="your.email@revolvingsource.com"
+                  required
+                  pattern=".*(@revolvingsource\.com|@test\.com)$"
+                  title="Please use @revolvingsource.com or @test.com email"
+                >
+                <small class="form-text text-muted d-block mt-1">
+                  💡 Only @revolvingsource.com and @test.com emails are allowed
+                </small>
+              </div>
+
+              <!-- Password Field -->
+              <div class="mb-4">
+                <label for="password" class="form-label fw-semibold text-slate">Password</label>
+                <input 
+                  type="password" 
+                  class="form-control form-control-lg" 
+                  id="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  required
+                >
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" class="btn btn-gradient btn-lg w-100 rounded-pill shadow-sm">
+                Sign In
+              </button>
+            </form>
+
+            <hr class="my-4">
+
+            <!-- Info text -->
+            <p class="text-center text-muted small mb-0">
+              Don't have an access? <br>
+              Contact your admin for approval.or.Register here
+            </p>
+            <div>
+              <a href="{% url 'staff-register' %}" class="btn btn-outline-gradient btn-sm rounded-pill mt-2">
+                Register as Staff
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="text-center mt-4">
+          <a href="{% url 'index' %}" class="btn btn-outline-gradient rounded-pill">
+            ← Back to Home
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Custom Styling -->
+<style>
+  body {
+    background-color: #f8fafc;
+    color: #1e293b;
+  }
+
+  .text-slate {
+    color: #1e293b;
+  }
+
+  .btn-gradient {
+    background: linear-gradient(to right, #0d9488, #10b981);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(to right, #0f766e, #0d9488);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3) !important;
+  }
+
+  .btn-outline-gradient {
+    border: 2px solid #0d9488;
+    color: #0d9488;
+    transition: all 0.3s ease;
+  }
+  .btn-outline-gradient:hover {
+    background: linear-gradient(to right, #0d9488, #10b981);
+    color: #fff;
+    border-color: #0d9488;
+  }
+
+  .form-control:focus {
+    border-color: #0d9488;
+    box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.25);
+  }
+
+  .card {
+    border-radius: 12px;
+    background: white;
+  }
+</style>
+
+<script>
+  // Handle form submission with API call
+  document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    try {
+      const response = await fetch('{% url "staff-login" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Redirect to pending staff if director, otherwise to dashboard
+        if (data.designation === 'director') {
+          window.location.href = '{% url "pending-staff-list" %}';
+        } else {
+          window.location.href = '{% url "contact-management" %}';
+        }
+      } else {
+        alert(data.error || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred. Please try again.');
+    }
+  });
+</script>
+
+{% endblock %}
