@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
+from rest_framework.permissions import BasePermission
 from .serializers import BusinessSerializer,ContactSerializer,staffRegisterSerializer
 from .models import Business,Contact,User,Collection
 from django.contrib import messages
@@ -8,6 +9,15 @@ from .forms import CollectionForm
 from rest_framework.response import Response
 from rest_framework.decorators import api_view,authentication_classes
 from django.contrib.auth import authenticate, login,logout
+
+
+class IsStaffOrCreateOnly(BasePermission):
+    """Allow anyone to create a contact, but require staff for everything else."""
+
+    def has_permission(self, request, view):
+        if view.action == 'create':
+            return True
+        return bool(request.user and request.user.is_staff)
 
 
 # Create your views here.
@@ -21,6 +31,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
 class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
+    permission_classes = [IsStaffOrCreateOnly]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
