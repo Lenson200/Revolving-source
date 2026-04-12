@@ -12,11 +12,13 @@ router.register(r'contacts', ContactViewSet, basename='contact')
 urlpatterns = [
      path("", views.index, name="index"),
      path("api/", include(router.urls)),
+     path('staff/login-page/', views.staff_login_page, name='staff-login-page'),
      path('staff/register/', views.staff_register, name='staff-register'),
      path('staff/login/', views.staff_login, name='staff-login'),
      path('staff/logout/', views.logout_view, name='staff-logout'),
      path('staff/pending/', views.pending_staff_list, name='pending-staff-list'),
      path('approve-staff/<int:pk>/', views.approve_staff_user, name='approve-staff'),
+     path('contacts/manage/', views.contact_management, name='contact-management'),
      path('list-contacts/', views.list_contacts, name='list-contacts'),
      path('contacts/<int:pk>/status/', views.update_contact_status, name='update-contact-status'),
      path('collections/add/', views.create_collection, name='create-collection'),

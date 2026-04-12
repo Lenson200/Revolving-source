@@ -123,7 +123,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 # Media files (User uploads)
 MEDIA_URL = "/media/"
-MEDIA_ROOT = '/app/media'
+# MEDIA_ROOT = '/app/media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # WhiteNoise for serving static and media files in production
 if not DEBUG:
@@ -134,13 +135,15 @@ STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Ensure media directory exists with proper permissions
-os.makedirs(MEDIA_ROOT, exist_ok=True)
-os.makedirs(os.path.join(MEDIA_ROOT, 'collections'), exist_ok=True)
-
-# Make sure directory is writable
-if os.path.exists(MEDIA_ROOT):
-    os.chmod(MEDIA_ROOT, 0o755)
-    os.chmod(os.path.join(MEDIA_ROOT, 'collections'), 0o755)
+try:
+    os.makedirs(MEDIA_ROOT, exist_ok=True)
+    os.makedirs(os.path.join(MEDIA_ROOT, 'collections'), exist_ok=True)
+    # Make sure directory is writable
+    if os.path.exists(MEDIA_ROOT):
+        os.chmod(MEDIA_ROOT, 0o755)
+        os.chmod(os.path.join(MEDIA_ROOT, 'collections'), 0o755)
+except (PermissionError, OSError) as e:
+    print(f"Warning: Could not create media directories: {e}")
 
 # Security Settings for Production
 if not DEBUG:
