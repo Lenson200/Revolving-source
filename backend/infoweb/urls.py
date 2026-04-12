@@ -16,6 +16,7 @@ urlpatterns = [
      path('staff/register/', views.staff_register, name='staff-register'),
      path('staff/login/', views.staff_login, name='staff-login'),
      path('staff/logout/', views.logout_view, name='staff-logout'),
+     path('logout/', views.logout_page, name='logout-page'),
      path('staff/pending/', views.pending_staff_list, name='pending-staff-list'),
      path('approve-staff/<int:pk>/', views.approve_staff_user, name='approve-staff'),
      path('contacts/manage/', views.contact_management, name='contact-management'),

@@ -122,20 +122,44 @@ def logout_view(request):
     logout(request)
     return Response({'message': 'Logged out successfully'})
 
+def logout_page(request):
+    """Handle logout and redirect to index."""
+    logout(request)
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('index')
+
 def pending_staff_list(request):
     """Return all unapproved staff members - only directors can view."""
-    if not request.user.is_authenticated or request.user.designation != 'director':
+    if not request.user.is_authenticated:
+        messages.error(request, 'You must be logged in to access this page')
+        return redirect('index')
+
+    # Check if user has designation attribute
+    if not hasattr(request.user, 'designation'):
+        messages.error(request, 'User account is not properly configured. Please contact admin.')
+        return redirect('index')
+
+    if request.user.designation != 'director':
         messages.error(request, 'Only directors can access this page')
         return redirect('index')
-    
+
     users = User.objects.filter(is_staff_member=True, is_approved=False).order_by('-date_joined')
     return render(request, 'infoweb/pending_staff.html', {'pending_staff': users})
 def approve_staff_user(request, pk):
     """Approve a specific staff user - only directors can approve."""
-    if not request.user.is_authenticated or request.user.designation != 'director':
+    if not request.user.is_authenticated:
+        messages.error(request, 'You must be logged in to approve staff')
+        return redirect('index')
+
+    # Check if user has designation attribute
+    if not hasattr(request.user, 'designation'):
+        messages.error(request, 'User account is not properly configured. Please contact admin.')
+        return redirect('index')
+
+    if request.user.designation != 'director':
         messages.error(request, 'Only directors can approve staff')
         return redirect('index')
-    
+
     try:
         user = User.objects.get(pk=pk)
     except User.DoesNotExist:
@@ -159,17 +183,21 @@ def list_contacts(request):
 
 def contact_management(request):
     """Manage and view all contacts - staff only."""
-    if not request.user.is_authenticated or not request.user.is_staff:
+    if not request.user.is_authenticated:
+        messages.error(request, 'You must be logged in to access contacts')
+        return redirect('index')
+
+    if not request.user.is_staff:
         messages.error(request, 'You must be staff to access contacts')
         return redirect('index')
-    
+
     contacts = Contact.objects.all().order_by('-submitted_at')
-    
+
     # Filter by status if provided
     status_filter = request.GET.get('status')
     if status_filter:
         contacts = contacts.filter(status=status_filter)
-    
+
     context = {
         'contacts': contacts,
         'status_filter': status_filter,
@@ -180,10 +208,14 @@ def contact_management(request):
 
 def update_contact_status(request, pk):
     """Update contact status - only staff can update."""
-    if not request.user.is_authenticated or not request.user.is_staff:
+    if not request.user.is_authenticated:
+        messages.error(request, 'You must be logged in to update contacts')
+        return redirect('index')
+
+    if not request.user.is_staff:
         messages.error(request, 'You must be staff to update contacts')
         return redirect('contact-management')
-    
+
     try:
         contact = Contact.objects.get(pk=pk)
     except Contact.DoesNotExist:
