@@ -1,27 +1,8 @@
 import axios from 'axios'
 
-const defaultApiUrl = process.env.NEXT_PUBLIC_API_URL
+const defaultApiUrl = (process.env.NEXT_PUBLIC_API_URL || 'https://laudable-vision-production.up.railway.app/').replace(/\/+$/, '') + '/api/'
 
-const API_URL = (() => {
-  if (defaultApiUrl) {
-    return defaultApiUrl.replace(/\/+$/, '') + '/api/'
-  }
-
-  if (typeof window !== 'undefined') {
-    const origin = window.location.origin
-    if (origin.includes('.app.github.dev')) {
-      return origin.replace(/-3000\.app\.github\.dev$/, '-8000.app.github.dev') + '/api/'
-    }
-    if (origin.includes('localhost')) {
-      return 'http://localhost:8000/api/'
-    }
-    const fallbackApiUrl = 'https://laudable-vision-production.up.railway.app/api/'
-    console.warn('⚠️ NEXT_PUBLIC_API_URL is not set; falling back to', fallbackApiUrl)
-    return fallbackApiUrl
-  }
-
-  return 'http://localhost:8000/api/'
-})()
+const API_URL = defaultApiUrl
 
 export const fetchBusinesses = async () => {
   try {
