@@ -81,11 +81,21 @@ WSGI_APPLICATION = "backend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# Use SQLite for Railway (simpler deployment)
+# Note: Railway's filesystem is ephemeral, so data will reset on redeploys
 DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default=f'sqlite:///{os.path.join(BASE_DIR, "db.sqlite3")}')
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
 }
+
+# For production with persistent data, consider using Railway PostgreSQL:
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=f'sqlite:///{os.path.join(BASE_DIR, "db.sqlite3")}'
+#     )
+# }
 
 AUTH_USER_MODEL = "infoweb.User"
 # Password validation
