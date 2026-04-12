@@ -45,14 +45,51 @@ class ContactViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response({'message': 'Your message has been received!'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-@api_view(['POST'])
 def staff_register(request):
-    serializer = staffRegisterSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response( {'message': 'Registration successful. Await admin approval.'},
-            status=201)
-    return Response(serializer.errors, status=400)
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+        designation = request.POST.get('designation', 'staff')
+
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'infoweb/staff_register.html', {
+                'username': username,
+                'email': email,
+                'designation': designation,
+                'designations': User.DESIGNATION_CHOICES,
+            })
+
+        data = {
+            'username': username,
+            'email': email,
+            'password': password,
+            'designation': designation,
+        }
+
+        serializer = staffRegisterSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            messages.success(request, 'Registration successful! Please log in or continue from the homepage.')
+            return redirect('index')
+
+        errors = serializer.errors
+        for field, field_errors in errors.items():
+            for error in field_errors:
+                messages.error(request, f"{field}: {error}")
+
+        return render(request, 'infoweb/staff_register.html', {
+            'username': username,
+            'email': email,
+            'designation': designation,
+            'designations': User.DESIGNATION_CHOICES,
+        })
+
+    return render(request, 'infoweb/staff_register.html', {
+        'designations': User.DESIGNATION_CHOICES,
+    })
 
 @api_view(['POST'])
 @authentication_classes([])  
@@ -64,7 +101,7 @@ def staff_login(request):
     allowed_domains = ['revolvingsource.com', 'test.com']
     domain = email.split('@')[-1] if '@' in email else ''
     if domain not in allowed_domains:
-        return Response({'error': f'Only @revolvingsource.com and @test.com emails are allowed'}, status=400)
+        return Response({'error': 'wrong email address'}, status=400)
 
     try:
         user_obj = User.objects.get(email=email)

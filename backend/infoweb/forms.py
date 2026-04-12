@@ -11,3 +11,4 @@ class CollectionForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
+

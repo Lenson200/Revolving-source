@@ -14,15 +14,28 @@ class ContactSerializer(serializers.ModelSerializer):
 class staffRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'email', 'password', 'designation']
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
 
     def create(self, validated_data):
+        designation = validated_data.get('designation', 'staff')
+        password = validated_data.pop('password')
+
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
-            password=validated_data['password']
+            password=password,
+            designation=designation,
         )
-        user.is_staff_member = True  # ✅ ensures they appear in the pending list
-        user.is_approved = False     # ✅ wait for approval
+        user.is_staff_member = True
+
+        if designation == 'director':
+            user.is_approved = True
+            user.is_staff = True
+        else:
+            user.is_approved = False
+
         user.save()
         return user
