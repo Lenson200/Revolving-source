@@ -160,7 +160,7 @@ try:
         os.chmod(MEDIA_ROOT, 0o755)
         os.chmod(os.path.join(MEDIA_ROOT, 'collections'), 0o755)
 except (PermissionError, OSError) as e:
-    print(f"Warning: Could not create media directories: {e}")
+    print(f"Warning: Could not create media : {e}")
 
 # Security Settings for Production
 if not DEBUG:
