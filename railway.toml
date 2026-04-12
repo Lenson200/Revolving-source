@@ -2,4 +2,4 @@
 builder = "dockerfile"
 
 [deploy]
-startCommand = "cd backend && mkdir -p media && python manage.py migrate --noinput && gunicorn backend.wsgi --bind 0.0.0.0:$PORT"
+startCommand = "mkdir -p backend/media && cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn backend.wsgi --bind 0.0.0.0:$PORT"
