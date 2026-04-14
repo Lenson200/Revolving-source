@@ -254,7 +254,7 @@ def create_collection(request):
     else:
         form = CollectionForm()
 
-    collections = Collection.objects.select_related('business').order_by('-created_at')
+    collections = Collection.objects.all().order_by('-created_at')
     return render(request, 'infoweb/add_collection.html', {'form': form, 'collections': collections})
 
 @api_view(['GET'])
