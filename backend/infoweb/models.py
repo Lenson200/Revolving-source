@@ -71,7 +71,14 @@ class testimonial(models.Model):
     def __str__(self):
         return f"{self.name} - {self.company}"
 class Collection(models.Model):
-    business = models.ForeignKey('Business', on_delete=models.CASCADE, related_name='collections')
+    INTEREST_CHOICES = [
+        ('produce', 'Fresh Produce & Wholesale'),
+        ('ecommerce', 'E-Commerce Partnership'),
+        ('services', 'Business Services'),
+        ('apparel', 'Fashion & Apparel'),
+        ('other', 'Other Inquiry'),
+    ]
+    business = models.CharField(max_length=20, choices=INTEREST_CHOICES)
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to='collections/', blank=True, null=True)
@@ -79,4 +86,4 @@ class Collection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name} ({self.business.title})"
+        return f"{self.name} ({self.get_business_display()})"
