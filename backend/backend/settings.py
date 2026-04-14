@@ -30,8 +30,8 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(','
 # Application definition
 
 INSTALLED_APPS = [
-    "storages",
-    "infoweb",
+    'storages',
+    'infoweb',
     'rest_framework',
     'corsheaders',
     "django.contrib.admin",
