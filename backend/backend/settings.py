@@ -130,14 +130,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL')  # R2 URL
-AWS_S3_REGION_NAME = 'auto'
-AWS_DEFAULT_ACL = 'public-read'
-AWS_QUERYSTRING_AUTH = False
-
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
