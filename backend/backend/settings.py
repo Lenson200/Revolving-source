@@ -79,6 +79,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "backend.wsgi.application"
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
 
 # Database configuration
 if os.getenv('DATABASE_URL'):
@@ -114,10 +120,9 @@ AUTH_USER_MODEL = "infoweb.User"
 GS_DEFAULT_ACL = "publicRead"
 GS_BUCKET_NAME = config("GS_BUCKET_NAME")
 
-GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
-    json.loads(config("GCS_CREDENTIALS_JSON"))
+GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+    os.path.join(BASE_DIR, "../my-project-media-493307-da9d4c779756.json")
 )
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
