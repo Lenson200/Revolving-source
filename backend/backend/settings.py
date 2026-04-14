@@ -153,7 +153,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 # Media files (User uploads)
 MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
-MEDIA_ROOT = 'app/media/'
+MEDIA_ROOT = '/app/media'
 
 
 
