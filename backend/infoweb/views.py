@@ -241,19 +241,14 @@ def create_collection(request):
     if request.method == 'POST':
         form = CollectionForm(request.POST, request.FILES)
         if form.is_valid():
-            collection = form.save(commit=False)
-            
-            # Explicitly save the image file
-            if 'image' in request.FILES:
-                image_file = request.FILES['image']
-                collection.image = image_file
-            
-            collection.save()
-            messages.success(request, "✅ Collection added successfully!")
-            return redirect('create-collection')
+            form.save()
+            messages.success(request, 'Collection created successfully!')
+            return redirect('collection-list')
+        else:
+            messages.error(request, 'Error creating collection. Please check the form for errors.')
     else:
         form = CollectionForm()
-
+      
     collections = Collection.objects.all().order_by('-created_at')
     return render(request, 'infoweb/add_collection.html', {'form': form, 'collections': collections})
 

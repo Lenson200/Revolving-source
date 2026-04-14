@@ -73,7 +73,7 @@ class testimonial(models.Model):
     def __str__(self):
         return f"{self.name} - {self.company}"
 
-def collection_upload_path(filename):
+def collection_upload_path(instance, filename):
     ext = filename.split('.')[-1]
     name = uuid.uuid4().hex
     return f"collections/{name}.{ext}"
