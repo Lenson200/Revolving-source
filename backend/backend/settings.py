@@ -120,7 +120,7 @@ AUTH_USER_MODEL = "infoweb.User"
 GS_DEFAULT_ACL = "publicRead"
 GS_BUCKET_NAME = config("GS_BUCKET_NAME")
 GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
-    json.loads(config("GS_CREDENTIALS_JSON"))
+    json.loads(config("GCS_CREDENTIALS_JSON"))
 )
 
 # Password validation
