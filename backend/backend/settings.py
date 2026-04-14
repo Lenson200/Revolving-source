@@ -160,7 +160,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 # Media files (User uploads)
 MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
-MEDIA_ROOT = None  # Not used since we're using GCS for media storage
+MEDIA_ROOT ="/app/media/"
 
 
 # WhiteNoise for serving static and media files in production
