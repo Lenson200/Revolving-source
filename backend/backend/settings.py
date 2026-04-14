@@ -80,7 +80,13 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
+ # Local development → SQLite (NO Postgres needed)
+# DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#         }
+#     }
 # Database configuration
 if os.getenv('DATABASE_URL'):
     # Use DATABASE_URL when available (Railway environment)
