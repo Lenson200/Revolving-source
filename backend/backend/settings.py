@@ -102,14 +102,20 @@ else:
             'PORT': os.getenv('PGPORT', '5432'),
         }
     }
-
-DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 AUTH_USER_MODEL = "infoweb.User"
-
+GS_DEFAULT_ACL = "publicRead"
 GS_BUCKET_NAME = config("GS_BUCKET_NAME")
 
-GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
-    json.loads(config("GCS_CREDENTIALS_JSON"))
+GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+    os.path.join(BASE_DIR, "../my-project-media-493307-da9d4c779756.json")
 )
 
 # Password validation
@@ -146,27 +152,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 # Media files (User uploads)
 MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
-MEDIA_ROOT = '/app/media'
+MEDIA_ROOT = None  # Not used since we're using GCS for media storage
 
 
 # WhiteNoise for serving static and media files in production
-if not DEBUG:
-    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Ensure media directory exists with proper permissions
-try:
-    os.makedirs(MEDIA_ROOT, exist_ok=True)
-    os.makedirs(os.path.join(MEDIA_ROOT, 'collections'), exist_ok=True)
-    # Make sure directory is writable
-    if os.path.exists(MEDIA_ROOT):
-        os.chmod(MEDIA_ROOT, 0o755)
-        os.chmod(os.path.join(MEDIA_ROOT, 'collections'), 0o755)
-except (PermissionError, OSError) as e:
-    print(f"Warning: Could not create media : {e}")
 
 # Security Settings for Production
 if not DEBUG:

@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from .validators import email_validator
+import uuid
+import os
 # Create your models here.
 
 class User(AbstractUser):
@@ -70,6 +72,12 @@ class testimonial(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.company}"
+
+def collection_upload_path(instance, filename):
+    ext = filename.split('.')[-1]
+    name = uuid.uuid4().hex
+    return f"collections/{name}.{ext}"
+
 class Collection(models.Model):
     INTEREST_CHOICES = [
         ('produce', 'Fresh Produce & Wholesale'),
@@ -81,7 +89,7 @@ class Collection(models.Model):
     business = models.CharField(max_length=20, choices=INTEREST_CHOICES)
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='collections/', blank=True, null=True)
+    image = models.ImageField(upload_to=collection_upload_path, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
