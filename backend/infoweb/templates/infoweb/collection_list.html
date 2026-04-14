@@ -30,7 +30,7 @@
             {% for collection in collections %}
             <tr>
                 <th scope="row">{{ forloop.counter }}</th>
-                <td>{{ collection.business.title }}</td>
+                <td>{{ collection.get_business_display  }}</td>
                 <td>{{ collection.name }}</td>
                 <td>
                 {% if collection.image %}

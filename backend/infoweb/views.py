@@ -261,7 +261,7 @@ def create_collection(request):
 def collections_by_business(request, business_id):
     try:
         business = Business.objects.get(type=business_id)
-        collections = business.collections.all()
+        collections = Collection.objects.filter(business=business.type)
         business_data = {
             "id": business.type,
             "title": business.title,
@@ -295,7 +295,7 @@ def business_list(request):
         "businesses": businesses
     })
 def collection_list(request):
-    collections = Collection.objects.select_related('business').order_by('-created_at')
+    collections = Collection.objects.all().order_by('-created_at')
     return render(request, "infoweb/collection_list.html", {
         "collections": collections
     })

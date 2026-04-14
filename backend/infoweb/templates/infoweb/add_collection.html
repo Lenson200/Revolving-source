@@ -80,7 +80,7 @@
             {% for c in collections %}
             <tr>
               <td class="fw-semibold">{{ c.name }}</td>
-              <td>{{ c.business.title }}</td>
+              <td>{{ c.get_business_display }}</td>
               <td>{{ c.price|default:"—" }}</td>
               <td>
                 {% if c.image %}
