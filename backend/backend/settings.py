@@ -79,12 +79,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "backend.wsgi.application"
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
 
 # Database configuration
 if os.getenv('DATABASE_URL'):
@@ -108,16 +102,15 @@ else:
             'PORT': os.getenv('PGPORT', '5432'),
         }
     }
-# STORAGES = {
-#     "default": {
-#         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
-#     },
-#     "staticfiles": {
-#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-#     },
-# }
-DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
-staticfiles_storage = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 
 AUTH_USER_MODEL = "infoweb.User"
 GS_DEFAULT_ACL = "publicRead"
@@ -160,7 +153,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 # Media files (User uploads)
 MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
-MEDIA_ROOT ="/app/media/"
+
 
 
 # WhiteNoise for serving static and media files in production
