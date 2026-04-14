@@ -114,9 +114,10 @@ AUTH_USER_MODEL = "infoweb.User"
 GS_DEFAULT_ACL = "publicRead"
 GS_BUCKET_NAME = config("GS_BUCKET_NAME")
 
-GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
-    os.path.join(BASE_DIR, "../my-project-media-493307-da9d4c779756.json")
+GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
+    json.loads(config("GCS_CREDENTIALS_JSON"))
 )
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
