@@ -108,14 +108,17 @@ else:
             'PORT': os.getenv('PGPORT', '5432'),
         }
     }
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+# STORAGES = {
+#     "default": {
+#         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+#     },
+#     "staticfiles": {
+#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+#     },
+# }
+DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+staticfiles_storage = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 AUTH_USER_MODEL = "infoweb.User"
 GS_DEFAULT_ACL = "publicRead"
 GS_BUCKET_NAME = config("GS_BUCKET_NAME")
