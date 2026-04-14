@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+import json
+from google.oauth2 import service_account
 from decouple import config
 import dj_database_url
 
@@ -28,6 +30,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(','
 # Application definition
 
 INSTALLED_APPS = [
+    "storages",
     "infoweb",
     'rest_framework',
     'corsheaders',
@@ -77,16 +80,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
- # Local development → SQLite (NO Postgres needed)
-# DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#         }
-#     }
 # Database configuration
 if os.getenv('DATABASE_URL'):
     # Use DATABASE_URL when available (Railway environment)
@@ -109,8 +102,16 @@ else:
             'PORT': os.getenv('PGPORT', '5432'),
         }
     }
-    
+
+DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
 AUTH_USER_MODEL = "infoweb.User"
+
+GS_BUCKET_NAME = config("GS_BUCKET_NAME")
+
+GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
+    json.loads(config("GCS_CREDENTIALS_JSON"))
+)
+
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
@@ -129,6 +130,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL')  # R2 URL
+AWS_S3_REGION_NAME = 'auto'
+AWS_DEFAULT_ACL = 'public-read'
+AWS_QUERYSTRING_AUTH = False
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -145,7 +153,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 # Media files (User uploads)
-MEDIA_URL = "/media/"
+MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
 MEDIA_ROOT = '/app/media'
 
 
