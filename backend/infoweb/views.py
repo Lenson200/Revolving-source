@@ -1,3 +1,6 @@
+from venv import logger
+from psycopg import logger
+
 from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.permissions import BasePermission
@@ -9,6 +12,7 @@ from .forms import CollectionForm
 from rest_framework.response import Response
 from rest_framework.decorators import api_view,authentication_classes
 from django.contrib.auth import authenticate, login,logout
+import logging
 
 
 class IsStaffOrCreateOnly(BasePermission):
@@ -240,15 +244,23 @@ def update_contact_status(request, pk):
 def create_collection(request):
     if request.method == 'POST':
         form = CollectionForm(request.POST, request.FILES)
+        logger.info(f"Form data: {request.POST}")
+        logger.info(f"Form files: {request.FILES}")
+        
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Collection created successfully!')
-            return redirect('collection-list')
+            try:
+                form.save()
+                messages.success(request, 'Collection created successfully!')
+                return redirect('collection-list')
+            except Exception as e:
+                logger.error(f"Error saving form: {str(e)}", exc_info=True)
+                messages.error(request, f'Error creating collection: {str(e)}')
         else:
+            logger.error(f"Form errors: {form.errors}")
             messages.error(request, 'Error creating collection. Please check the form for errors.')
     else:
         form = CollectionForm()
-      
+    
     collections = Collection.objects.all().order_by('-created_at')
     return render(request, 'infoweb/add_collection.html', {'form': form, 'collections': collections})
 
