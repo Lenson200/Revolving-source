@@ -1,6 +1,4 @@
 from venv import logger
-from psycopg import logger
-
 from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.permissions import BasePermission
@@ -12,7 +10,7 @@ from .forms import CollectionForm
 from rest_framework.response import Response
 from rest_framework.decorators import api_view,authentication_classes
 from django.contrib.auth import authenticate, login,logout
-import logging
+import logger
 
 
 class IsStaffOrCreateOnly(BasePermission):
