@@ -10,7 +10,7 @@ from .forms import CollectionForm
 from rest_framework.response import Response
 from rest_framework.decorators import api_view,authentication_classes
 from django.contrib.auth import authenticate, login,logout
-import logger
+import logging
 
 
 class IsStaffOrCreateOnly(BasePermission):
@@ -237,8 +237,9 @@ def update_contact_status(request, pk):
     contact.status = status_value
     contact.save()
     messages.success(request, f"Contact status updated to {status_value}")
-    return redirect('contact-management')  
-
+    return redirect('contact-management') 
+ 
+logger = logging.getLogger(__name__)
 def create_collection(request):
     if request.method == 'POST':
         form = CollectionForm(request.POST, request.FILES)
