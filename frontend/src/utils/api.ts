@@ -19,8 +19,9 @@ export const fetchBusinesses = async () => {
 export const fetchCollectionsByBusiness = async (businessType: string) => {
   try {
     const response = await axios.get(`${API_URL}collections/${businessType}/`, {
-      timeout: 3000,
+      timeout: 10000, // optional: 10 seconds max wait for collections
     })
+    console.log(`✅ Fetched collections for ${businessType}:`, response.data)
     return response.data
   } catch (error) {
     console.warn(`⚠️ Failed to fetch collections for ${businessType} — returning empty.`)
